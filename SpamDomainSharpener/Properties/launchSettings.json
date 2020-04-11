@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SpamDomainSharpener": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\Users\\RalfJoerg\\Downloads\\junk_mail.txt\""
+    }
+  }
+}
