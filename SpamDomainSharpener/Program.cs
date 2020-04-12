@@ -21,11 +21,20 @@ namespace SpamDomainSharpener
             List<string> emailList = new List<string>();
             List<string> domainList = new List<string>();
             List<string> finalList = new List<string>();
-            emailList.AddRange(File.ReadAllLines(inFile));
-            domainList.AddRange(emailList.Select(e => "@" + e.Split('@')[1]).GroupBy(d => d).Select(g => g.Key + ";" + g.Count().ToString()).OrderBy(r => r));
+            emailList.AddRange(File.ReadAllLines(inFile)
+                               .Where(e=>!(e.StartsWith(@"at") && e.EndsWith(@"@timestamped-at.koeln")))
+                               .Select(e=> e.Contains("@")?e:string.Format("@{0}",e)));
+            domainList.AddRange(emailList.Select(e => "@" + e.Split('@')[1])
+                                         .GroupBy(d => d)
+                                         .Select(g => g.Key + ";" + g.Count().ToString())
+                                         .OrderBy(r => r));
             File.WriteAllLines(outFile, domainList);
+
             domainList.Clear();
-            domainList.AddRange(emailList.Select(e => "@" + e.Split('@')[1]).GroupBy(d => d).Where(g => g.Count() > 2).Select(g => g.Key).OrderBy(r => r));
+            domainList.AddRange(emailList.Select(e => "@" + e.Split('@')[1]).GroupBy(d => d).Where(g => g.Count() > 2).Select(g => g.Key).OrderBy(r => r));          
+            domainList.AddRange(emailList.Select(e => new { Domain = string.Format("@{0}", e.Split('@')[1]), Email = e }).Where(d => !domainList.Contains(d.Domain)).Select(a => a.Email));
+
+            domainList.Insert(0, string.Format("at{0}@timestamped.koeln", DateTime.Now.ToString("yyyy_MM_dd_hh_mm")));
             File.WriteAllLines(outFileFiltered, domainList);
         }
 
