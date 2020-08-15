@@ -57,10 +57,11 @@ for key in list(domainDict):
 # Writing new spam list file
 # First: domains blocked entirely (and adding newly added domains in a separate list)
 myOutFile = open(targetFile, "w")
-for key in list(domainDict):
-    myOutFile.write('@'+key+"\n")
-    if domainDict[key] < 100000:
-        newlyAddedDomains.append( "Newly added domain: {k} num of occurences: {n}".format(k=key, n = domainDict[key]))
+#for key in list(domainDict):
+for domainItem in sorted(domainDict.items(), key=lambda item: item[0]):
+    myOutFile.write('@'+domainItem[0]+"\n")
+    if domainItem[1] < 100000:
+        newlyAddedDomains.append("Newly added domain: {d} num of occurences: {n}".format(d = domainItem[0], n = domainItem[1]))
 # Second: complete email addresses for domains appearing fewer than 3 times
 for spamAddress in sorted(myData, key=lambda x: x.domain, reverse=False):
     if spamAddress.domain not in domainDict:
