@@ -11,6 +11,7 @@ exclusionList = ['gmail.com', 'googlemail.com', 'hotmail.com', 'outlook.com', \
 
 domainDict = {}
 
+newlyAddedDomains = []
 class SpamAddress:
      
     def __init__(self, emailAddress):
@@ -40,7 +41,7 @@ for spamAddress in myData:
       #to avoid blocking gmail.com etc...,
     if spamAddress.IsDomainOnly():
        #print(spamAddress.domain + ' is a blocked domain already!')
-       domainDict[spamAddress.domain] = 100 #signalling, this blocked domain has to stay
+       domainDict[spamAddress.domain] = 100000 #signalling, this blocked domain has to stay
     else:
         if spamAddress.domain in domainDict:
             domainDict[spamAddress.domain] = domainDict[spamAddress.domain] + 1
@@ -48,18 +49,27 @@ for spamAddress in myData:
             #if addressParts.domain != '@timestamped.koeln'
             domainDict[spamAddress.domain] = 1
 
-#print('----------Removing domains having less than 3 entries')
-#keys = domainDict.keys()
+# Removing domains having less than 3 entries
 for key in list(domainDict):
     if domainDict[key] < 3:
         domainDict.pop(key)
 
+# Writing new spam list file
+# First: domains blocked entirely (and adding newly added domains in a separate list)
 myOutFile = open(targetFile, "w")
 for key in list(domainDict):
     myOutFile.write('@'+key+"\n")
+    if domainDict[key] < 100000:
+        newlyAddedDomains.append( "Newly added domain: {k} num of occurences: {n}".format(k=key, n = domainDict[key]))
+# Second: complete email addresses for domains appearing fewer than 3 times
 for spamAddress in sorted(myData, key=lambda x: x.domain, reverse=False):
     if spamAddress.domain not in domainDict:
         if spamAddress.domain != "timestamped.koeln":
             myOutFile.write(spamAddress.CompleteAddress()+"\n")
+# Third: Adding a new "timestamp" entry to the spam list
 myOutFile.write("at{0}@timestamped.koeln".format(datetime.now().strftime("%Y_%m_%d_%H_%M")))
 myOutFile.close()
+
+# Show newly added domains
+for domain in sorted(newlyAddedDomains):
+    print(domain)
